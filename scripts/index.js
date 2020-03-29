@@ -265,6 +265,16 @@ Main = React.createClass({
       markers: []
     });
   },
+  simulation_toggle: function() {
+    simulationStatus = !simulationStatus;
+    // paused = true;
+    // this["debugger"] = null;
+    // return this.setState({
+    //   status: "editing",
+    //   code: this.codeBackup,
+    //   markers: []
+    // });
+  },
   preRun: function() {
     this.setState({
       output: "",
@@ -401,11 +411,12 @@ Main = React.createClass({
     }
   },
   render: function() {
-    var brand, code, debugging, editing, input, lastVars, markers, output, ref, running, status, vars;
+    var brand, code, debugging, editing, simulating, input, lastVars, markers, output, ref, running, status, vars;
     ref = this.state, code = ref.code, input = ref.input, output = ref.output, status = ref.status, markers = ref.markers, vars = ref.vars, lastVars = ref.lastVars;
     debugging = status === "debugging";
     editing = status === "editing";
     running = status === "running";
+    simulating = status === "simulating";
     brand = React.createElement("a", {
       "href": void 0,
       "className": "logo"
@@ -427,7 +438,7 @@ Main = React.createClass({
     }), React.createElement(Navbar, {
       "brand": brand
     }, React.createElement(Nav, null, React.createElement(DropdownButton, {
-      "title": "File",
+      "title": "Arquivo",
       "onSelect": this.filemenu
     },
     // React.createElement(MenuItem, {
@@ -438,13 +449,13 @@ Main = React.createClass({
     React.createElement(MenuItem, {
       "eventKey": "quick-save"
     }, React.createElement(Glyphicon, {
-      "glyph": "upload"
-    }), " Load background"),
+      "glyph": "road"
+    }), " Pista..."),
     React.createElement(MenuItem, {
       "eventKey": "upload"
     }, React.createElement(Glyphicon, {
       "glyph": "upload"
-    }), " Open...")//,
+    }), " Carregar código")//,
     // React.createElement(MenuItem, {
     //   "eventKey": "download"
     // }, React.createElement(Glyphicon, {
@@ -457,13 +468,21 @@ Main = React.createClass({
       "disabled": !editing
     }, React.createElement(Glyphicon, {
       "glyph": "play"
-    }), "Run"), (debugging ? React.createElement(NavItem, {
+    }), " Run"), (debugging ? React.createElement(NavItem, {
       "href": "#",
       "onClick": (debugging ? this.debug_stop : void 0),
       "disabled": !debugging
     }, React.createElement(Glyphicon, {
       "glyph": "stop"
-    }), "Stop") : void 0))), React.createElement(Grid, null, (debugging ? React.createElement(Row, {
+    }), " Stop") : void 0),
+    React.createElement(NavItem, {
+      "href": "#",
+      "onClick": (this.simulation_toggle),
+      "disabled": !editing
+    }, React.createElement(Glyphicon, {
+      "glyph": "sunglasses"
+    }), " Simulation")
+    )), React.createElement(Grid, null, (debugging ? React.createElement(Row, {
       "className": "debug-toolbar"
     },) : void 0), React.createElement(Row, {
       "className": "main-row"

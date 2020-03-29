@@ -14,6 +14,9 @@ var cameraDeltaX = 0;
 var intersects;
 var raycaster;
 
+// Acrescentado por JP
+var simulationStatus = true;
+
 var kb = { key : new Array()};
 var ui = {
     isRotating : false,
@@ -213,10 +216,10 @@ function init() {
     camera.up = new THREE.Vector3(0,0,1);
 
     textures = {
-        bg 			: new THREE.TextureLoader().load( 'assets/img/bg.jpg' ),
+        // bg 			: new THREE.TextureLoader().load( 'assets/img/bg.jpg' ),
         // track 	: new THREE.TextureLoader().load( 'assets/img/7pixels.png', function(texture) {geometries.plane = new THREE.PlaneGeometry(texture.image.width,texture.image.height); geometries.plane.needsUpdate=true;} ),
         track 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
-        einstein 	: new THREE.TextureLoader().load( 'assets/img/einstein.jpg' )
+        // einstein 	: new THREE.TextureLoader().load( 'assets/img/einstein.jpg' )
     };
     
     geometries = {
@@ -229,15 +232,15 @@ function init() {
         track 	: new THREE.MeshBasicMaterial({
                                 map:textures.track,
                                 side : THREE.DoubleSide
-                            }),
-        einstein 	: new THREE.MeshBasicMaterial({
-                                map:textures.einstein,
-                                side : THREE.DoubleSide
-                            }),
-        wired 		: new THREE.MeshBasicMaterial({
-                                color: 0xff0000,
-                                wireframe: true,
                             })
+        // einstein 	: new THREE.MeshBasicMaterial({
+        //                         map:textures.einstein,
+        //                         side : THREE.DoubleSide
+        //                     }),
+        // wired 		: new THREE.MeshBasicMaterial({
+        //                         color: 0xff0000,
+        //                         wireframe: true,
+        //                     })
     };
 
     meshes = {
@@ -281,7 +284,8 @@ function init() {
                     robot = object;
                     robot.rotation.z = Math.PI;
                     robot.scale.x = robot.scale.y = robot.scale.z = 1;
-                    robot.position.x = robot.position.y = robot.position.z = 0;
+                    robot.position.x = 40;
+                    robot.position.y = robot.position.z = 0;
                     robot.da = robot.dx = robot.dy = 0;
                     robot.speedFactor = 0;
                     robot.walkSpeed = 1;
@@ -393,7 +397,7 @@ function animate() {
 }
 
 function readKeys() {
-    if (robot) {
+    if (robot && !simulationStatus) {
         if(kb.key['w']) {
             robot.speedFactor = 1;
         }
