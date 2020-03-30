@@ -34,3 +34,14 @@
 	background-color: LightGreen!important;
 }
 
+#helpScreen{
+	background-color: lightGray;
+	opacity:90%;
+	width: 90%;
+	height: 70%;
+	position: absolute;
+	top: 10%;
+	left: 5%;
+	z-index:20;
+	display:none;
+}
