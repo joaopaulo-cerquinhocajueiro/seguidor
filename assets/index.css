@@ -7,6 +7,7 @@
 #editor {
 	height: 500px;
 	width: 49%;
+	border: 10px red;
 }
 
 .logo {
@@ -24,9 +25,8 @@
 #scene {
 	/*height: 500px;
 	width: 49%;*/
-	border-width: 1px;
-	border-color: black;
-	padding-top: 0;
+	border: 1px lightgray solid;
+    padding-top: 0;
 	float: left;
 }
 
@@ -34,3 +34,36 @@
 	background-color: LightGreen!important;
 }
 
+#helpScreen{
+	background-color: lightGray;
+	opacity:90%;
+	width: 90%;
+	height: 70%;
+	position: absolute;
+	top: 10%;
+	left: 5%;
+	z-index:20;
+	display:none;
+	border-radius: 20px;
+	border: 2px red solid;
+}
+#headsUpDisplay{
+	background-color:black;
+	opacity:30%;
+	color: white;
+	position: absolute;
+	width: 40%;
+	height:20%;
+	left:5%;
+	top:10%;
+	font-size: 20px;
+	border-radius: 5px;
+}
+
+#editor:focus{
+	border-width: 20pt;
+	border-color: yellow solid;
+}
+#scene:focu{
+	border: 2px tomato solid;
+}

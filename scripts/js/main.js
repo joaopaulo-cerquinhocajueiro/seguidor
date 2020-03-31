@@ -14,6 +14,9 @@ var cameraDeltaX = 0;
 var intersects;
 var raycaster;
 
+// Acrescentado por JP
+var simulationStatus = true;
+
 var kb = { key : new Array()};
 var ui = {
     isRotating : false,
@@ -30,7 +33,8 @@ var ui = {
 
 const dotGeometry = new THREE.Geometry();
 dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
-const dotMaterial = new THREE.PointsMaterial( { size: 4, sizeAttenuation: false, color: 0xff0000} );
+const dotMaterialG = new THREE.PointsMaterial( { size: 4, sizeAttenuation: false, color: 0x00ff00} );
+const dotMaterialR = new THREE.PointsMaterial( { size: 4, sizeAttenuation: false, color: 0xff0000} );
 
 function getImageData( image ) {
 
@@ -145,24 +149,39 @@ function setTrackScaleFromTexture(texture) {
     // console.log("scaled");
 }
 
+//var sensors = Array();
 function insertSensors(object) {
     const robotRadius = object.radius;
-    var sensorPositions = Array();
+    // var sensorPositions = Array();
     const sensorAmplitude = Math.PI/3;
     for(var i=0; i<5;i++) {
         var ang = i*sensorAmplitude*0.25 + sensorAmplitude + Math.PI;
         var x = robotRadius*Math.cos(ang);
         var y = robotRadius*Math.sin(ang);
-        sensorPositions.push([x, y]);
+        // sensorPositions.push([x, y]);
 
-        var sensor = new THREE.Points( dotGeometry, dotMaterial);
+        var sensor = new THREE.Points( dotGeometry, dotMaterialR);
         sensor.position.x = x;
         sensor.position.y = y;
         sensor.position.z = 1;
         sensor.name = "sensor_" + i;
+        sensor.read = function(){
+            this.updateMatrixWorld();
+            var vector = this.position.clone();
+            var vector2 = vector.applyMatrix4( this.matrixWorld.clone() );
+            var pixelValue = getPixel(background,vector2.x*ui.textureScale + background.width*0.5, background.height*0.5 - vector2.y*ui.textureScale)[0]
+            if(pixelValue>100){
+                this.material = dotMaterialR;
+            } else {
+                this.material = dotMaterialG;
+            }
+            return pixelValue;
+        };
+//        sensors[i] = sensor;
         object.add( sensor );
     }
 }
+//console.log(sensors);
 
 function getSensorsPositions(object) {
     var sensorsPositions = new Array();
@@ -177,26 +196,6 @@ function getSensorsPositions(object) {
     return sensorsPositions;
 }
 
-function readSensors(sensorsPositions) {
-    var tempSensor = 0;
-    var sum = 0;
-    // console.log("readSensors");
-    // console.log(sensorsPositions);
-    for (var i=0; i<5; i++) {
-        // pololu3piSensors[i] = backgroundData[(sensorsPositions[i].y*background.width+sensorsPositions[i].x)*4];
-        pololu3piSensors[i] = getPixel(background,sensorsPositions[i].x*ui.textureScale + background.width*0.5, background.height*0.5 - sensorsPositions[i].y*ui.textureScale)[0];
-        //pololu3piSensors[i] = (i != 4 && i!=0 ? 0 : 255); 
-        tempSensor += (1- pololu3piSensors[i]/255.0)*(i+1)*1000;
-        sum += pololu3piSensors[i]/255.0;
-        // sum += 1;
-      }
-    
-      tempSensor /= sum;
-    
-    //   console.log(tempSensor);
-    
-      pololu3piSensorsResult = tempSensor;
-}
 
 function init() {
     for(var i=0;i<5;i++) {
@@ -204,7 +203,7 @@ function init() {
     }
     simulationScreen = document.getElementById("simulationScreen");
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xFFFFFFFF);
+    scene.background = new THREE.Color(0xF0F0F0FF);
     // instantiate a loader
     var loader = new THREE.OBJLoader();
 
@@ -213,10 +212,10 @@ function init() {
     camera.up = new THREE.Vector3(0,0,1);
 
     textures = {
-        bg 			: new THREE.TextureLoader().load( 'assets/img/bg.jpg' ),
+        // bg 			: new THREE.TextureLoader().load( 'assets/img/bg.jpg' ),
         // track 	: new THREE.TextureLoader().load( 'assets/img/7pixels.png', function(texture) {geometries.plane = new THREE.PlaneGeometry(texture.image.width,texture.image.height); geometries.plane.needsUpdate=true;} ),
         track 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
-        einstein 	: new THREE.TextureLoader().load( 'assets/img/einstein.jpg' )
+        // einstein 	: new THREE.TextureLoader().load( 'assets/img/einstein.jpg' )
     };
     
     geometries = {
@@ -229,15 +228,15 @@ function init() {
         track 	: new THREE.MeshBasicMaterial({
                                 map:textures.track,
                                 side : THREE.DoubleSide
-                            }),
-        einstein 	: new THREE.MeshBasicMaterial({
-                                map:textures.einstein,
-                                side : THREE.DoubleSide
-                            }),
-        wired 		: new THREE.MeshBasicMaterial({
-                                color: 0xff0000,
-                                wireframe: true,
                             })
+        // einstein 	: new THREE.MeshBasicMaterial({
+        //                         map:textures.einstein,
+        //                         side : THREE.DoubleSide
+        //                     }),
+        // wired 		: new THREE.MeshBasicMaterial({
+        //                         color: 0xff0000,
+        //                         wireframe: true,
+        //                     })
     };
 
     meshes = {
@@ -281,7 +280,8 @@ function init() {
                     robot = object;
                     robot.rotation.z = Math.PI;
                     robot.scale.x = robot.scale.y = robot.scale.z = 1;
-                    robot.position.x = robot.position.y = robot.position.z = 0;
+                    robot.position.x = 40;
+                    robot.position.y = robot.position.z = 0;
                     robot.da = robot.dx = robot.dy = 0;
                     robot.speedFactor = 0;
                     robot.walkSpeed = 1;
@@ -291,6 +291,42 @@ function init() {
                     robot.radius = robot.diameter*0.5;
                     insertSensors(robot);
                     scene.add( object );
+                    robot.readSensors = function() {
+                        var tempSensor = 0;
+                        var sum = 0;
+                        // console.log("readSensors");
+                        // console.log(sensorsPositions);
+                        for (var i=0; i<5; i++) {
+                            sensor = robot.getObjectByName("sensor_"+i);
+                            // pololu3piSensors[i] = backgroundData[(sensorsPositions[i].y*background.width+sensorsPositions[i].x)*4];
+                            pololu3piSensors[i] = sensor.read();
+                            // console.log(pololu3piSensors[i]);
+                            // sensor.material = pololu3piSensors[i]<100? dotMaterialR:dotMaterialG;
+                            //console.log(robot.getObjectByName("sensor_"+i).material);
+                            //pololu3piSensors[i] = (i != 4 && i!=0 ? 0 : 255); 
+                            tempSensor += (1- pololu3piSensors[i]/255.0)*(i+1)*1000;
+                            sum += pololu3piSensors[i]/255.0;
+                            // sum += 1;
+                          }
+                        
+                          tempSensor /= sum;
+                        
+                        //   console.log(tempSensor);
+                        
+                          pololu3piSensorsResult = tempSensor;
+                    }                    
+                    robot.isOverLine = function(){
+                        var overBlack = false
+                        for(angle=0.0;angle<2*Math.PI;angle+=Math.PI/100){
+                            var posX = robot.position.x + robot.radius*Math.cos(angle);
+                            var posY = robot.position.y + robot.radius*Math.sin(angle);
+                            var pixel = getPixel(background,posX*ui.textureScale + background.width*0.5, background.height*0.5 - posY*ui.textureScale);
+                            if(pixel[0]<10){
+                                overBlack = true;
+                            }
+                        }
+                        return overBlack;
+                    };
                 }, onProgress, onError );
         } );
 
@@ -375,8 +411,8 @@ function init() {
     if(paused == false) {
         // drawImageCenter(mini3pi, sim3pi.x, sim3pi.y, sim3pi.rotation);
         //readPixel(sim3pi.x, sim3pi.y, sim3pi.rotation+3.14/2);
-        var sensorPositions = getSensorsPositions(robot);
-        readSensors(sensorPositions);
+        //var sensorPositions = getSensorsPositions(robot);
+        robot.readSensors();
         
         var vc2 = jscpp["debugger"].setVariable("robot");
         vc2["robot"].v.members.sensorValues.v = pololu3piSensorsResult;
@@ -384,8 +420,16 @@ function init() {
   
     // setTimeout(simulateAndShow, 50);
   }
+var HUDstatus;
+window.onload = function(){
+    HUDstatus = document.getElementById("HUDstatus");
+};
 
 function animate() {
+    if (HUDstatus !== undefined){
+        var onLine = robot.isOverLine();
+        HUDstatus.innerHTML = "Linha: " + onLine;
+    }
     requestAnimationFrame(animate);
     readKeys();
     simulateAndShow();
@@ -393,7 +437,7 @@ function animate() {
 }
 
 function readKeys() {
-    if (robot) {
+    if (robot && !simulationStatus) {
         if(kb.key['w']) {
             robot.speedFactor = 1;
         }
@@ -570,7 +614,7 @@ function simulate() {
     if (robot) {
         // // get robot angle for force direction estimation
         
-
+        // console.log(document.getElementById("HUDStatus").innerHtml);// = "Status: " + str(3);
         // console.log("simulate");
         // var x = sim3pi.x;
         // var y = sim3pi.y;
@@ -621,5 +665,6 @@ function simulate() {
         robot.position.y = y + dt * v * Math.sin(newTheta);
         robot.rotation.z = theta + dt * w;
         
+//        getPixel()
     }
 }

@@ -7,7 +7,7 @@
 		<link href='assets/index.css' rel='stylesheet' />
 	</head>
 	<body>
-		<img id='imgBackground' src='7pixels.png' style="display:none;"/>
+		<img id='imgBackground' src='./assets/img/7pixels.png' style="display:none;"/>
 		<div id="mycontainer"></div>
 		<script src="./dist/JSCPP.js"></script>
 		<script src="./lib/jquery-2.1.1.js"></script>
@@ -25,6 +25,22 @@
 		<!--script src="./lib/launcher.js"></script-->
 		<canvas id="canvasBackground" width="735" height="500" style="display:none;" > </canvas>
 		<script src="./scripts/js/main.js"></script>
-
+		<div id="HeadsUpDisplay">Controle
+		<p id="HUDstatus">Status: </p>
+		</div>
+		<!-- <div id="helpScreen" onClick = "this.style.display = 'none'"> -->
+		<div id="helpScreen" onClick = "this.style.display = 'none'">
+		<h1>Teclado</h1>
+		<h3>Navegação</h3>
+		<ul>
+		<li>W - frente</li>
+		<li>S - ré</li>
+		<li>A - girar esquerda</li>
+		<li>D - girar direita</li>
+		<li>V - colocar em posição</li>
+		<li>B - Virar para posição</li>
+		<li>C - Trocar vista</li>
+		</ul> 
+		</div>
 	</body>
 </html>

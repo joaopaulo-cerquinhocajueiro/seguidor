@@ -72,6 +72,151 @@ VariablePanel = React.createClass({
   }
 });
 
+var preCode =  "#include <iostream>\n";
+preCode += "using namespace std;\n"
+//preCode += "#include <OrangutanLCD.h>\n";
+//preCode += "#include <OrangutanBuzzer.h>\n";
+//preCode += "#include <OrangutanPushbuttons.h>\n";
+//preCode += "#include <OrangutanAnalog.h>\n";
+//preCode += "#include <OrangutanLEDs.h>\n";
+//preCode += "#include <OrangutanMotors.h>\n";
+preCode += "#define IR_EMITTERS_ON 1\n";
+preCode += "#define BUTTON_A 0\n";
+preCode += "#define BUTTON_B 1\n";
+preCode += "#define BUTTON_C 2\n";
+preCode += "#define LOW 0\n";
+preCode += "#define HIGH 1\n";
+preCode += "OrangutanLCD2 OrangutanLCD;\n";
+preCode += "OrangutanBuzzer2 OrangutanBuzzer;\n";
+preCode += "OrangutanPushbuttons2 OrangutanPushbuttons;\n";
+preCode += "OrangutanAnalog2 OrangutanAnalog;\n";
+preCode += "OrangutanLEDs2 OrangutanLEDs;\n";
+preCode += "OrangutanMotors2 OrangutanMotors;\n\n";
+preCode += "void delay(int t){\nint a = t;\n/*TODO*/}\n";
+
+var result = result = `/*
+* Simple3piLineFollower - demo code for the Pololu 3pi Robot
+* 
+* This code will follow a black line on a white background, using a
+* very simple algorithm.  It demonstrates auto-calibration and use of
+* the 3pi IR sensors, motor control, bar graphs using custom
+* characters, and music playback, making it a good starting point for
+* developing your own more competitive line follower.
+*
+* http://www.pololu.com/docs/0J21
+* http://www.pololu.com
+* http://forum.pololu.com
+*
+*/
+
+// The 3pi include file must be at the beginning of any program that
+// uses the Pololu AVR library and 3pi.  Pololu3pi.h includes all of the
+// other Orangutan Arduino libraries that can be used to control the
+// on-board hardware such as LCD, buzzer, and motor drivers.
+#include <Pololu3pi.h>
+#include <PololuQTRSensors.h>
+#include <OrangutanMotors.h>
+#include <OrangutanAnalog.h>
+#include <OrangutanLEDs.h>
+#include <OrangutanLCD.h>
+#include <OrangutanPushbuttons.h>
+#include <OrangutanBuzzer.h>
+
+Pololu3pi robot;
+unsigned int sensors[5]; // an array to hold sensor values
+
+// Initializes the 3pi, displays a welcome message, calibrates, and
+// plays the initial music.  This function is automatically called
+// by the Arduino framework at the start of program execution.
+void setup()
+{
+ unsigned int counter; // used as a simple timer
+
+ // This must be called at the beginning of 3pi code, to set up the
+ // sensors.  We use a value of 2000 for the timeout, which
+ // corresponds to 2000*0.4 us = 0.8 ms on our 20 MHz processor.
+ robot.init(2000);
+
+ // Auto-calibration: turn right and left while calibrating the
+ // sensors.
+ for (counter=0; counter<80; counter++)
+ {
+   if (counter < 20 || counter >= 60)
+     OrangutanMotors.setSpeeds(40, -40);
+   else
+     OrangutanMotors.setSpeeds(-40, 40);
+
+   // This function records a set of sensor readings and keeps
+   // track of the minimum and maximum values encountered.  The
+   // IR_EMITTERS_ON argument means that the IR LEDs will be
+   // turned on during the reading, which is usually what you
+   // want.
+   robot.calibrateLineSensors(IR_EMITTERS_ON);
+
+   // Since our counter runs to 80, the total delay will be
+   // 80*20 = 1600 ms.
+   delay(20);
+ }
+ OrangutanMotors.setSpeeds(0, 0);
+}
+
+// The main function.  This function is repeatedly called by
+// the Arduino framework.
+void loop()
+{
+ // Get the position of the line.  Note that we *must* provide
+ // the "sensors" argument to read_line() here, even though we
+ // are not interested in the individual sensor readings.
+ unsigned int position = robot.readLine(sensors, IR_EMITTERS_ON);
+ if (position < 1000)
+ {
+   // We are far to the right of the line: turn left.
+
+   // Set the right motor to 100 and the left motor to zero,
+   // to do a sharp turn to the left.  Note that the maximum
+   // value of either motor speed is 255, so we are driving
+   // it at just about 40% of the max.
+   OrangutanMotors.setSpeeds(0, 100);
+
+   // Just for fun, indicate the direction we are turning on
+   // the LEDs.
+   OrangutanLEDs.left(HIGH);
+   OrangutanLEDs.right(LOW);
+ }
+ else if (position < 3000)
+ {
+   // We are somewhat close to being centered on the line:
+   // drive straight.
+   OrangutanMotors.setSpeeds(100, 100);
+   OrangutanLEDs.left(HIGH);
+   OrangutanLEDs.right(HIGH);
+ }
+ else
+ {
+   // We are far to the left of the line: turn right.
+   OrangutanMotors.setSpeeds(100, 0);
+   OrangutanLEDs.left(LOW);
+   OrangutanLEDs.right(HIGH);
+ }
+}`;
+//result += "void simPrint(char t){/*TODO*/}\n";
+//result += "void simPrint(char* t){/*TODO*/}\n";
+//result += "void simPrint(int t){/*TODO*/}\n";
+//result += fr.result;
+result = result.replace(/::/g, ".");
+result = result.replace(/ PROGMEM/g, "");
+result = result.replace(/\\xf7 /g, "pi");
+result = result.replace(/OrangutanLCD.print\(( |[A-Z]|[a-z]|'|[0-9]|"|!)*\);/g, ""); // remove as chamadas de print pois não há overloading implementado
+//result = result.replace(/while\(OrangutanBuzzer::isPlaying\(\)\);/g, "");
+result = result.replace("while(OrangutanBuzzer.isPlaying());", ""); // por algum motivo ele nao entende a construcao while(algo); // tive que remover
+var postCode = "\nint main() {\n";
+postCode += "\tsetup();\n";
+postCode += "\twhile(true){\n";
+postCode += "\t\tloop();\n";
+postCode += "\t}\n";
+postCode += "\treturn 0;\n";
+postCode += "}\n";
+
 Main = React.createClass({
   displayName: "Main",
   getInitialState: function() {
@@ -85,7 +230,8 @@ Main = React.createClass({
       lastVars: []
     };
   },
-  defaultCode: "#include <iostream>\nusing namespace std;\nint main() {\n    int a;\n    cin >> a;\n    cout << a*10 << endl;\n    return 0;\n}",
+  //defaultCode: "#include <iostream>\nusing namespace std;\nint main() {\n    int a;\n    cin >> a;\n    cout << a*10 << endl;\n    return 0;\n}",
+  defaultCode: result,
   componentDidMount: function() {
     jQuery.hotkeys.options.filterInputAcceptingElements = false;
     jQuery.hotkeys.options.filterContentEditable = false;
@@ -120,7 +266,9 @@ Main = React.createClass({
   run: function(debug, e) {
     var code, config, exitCode, input;
     e.preventDefault();
-    code = this.state.code;
+    code = preCode;
+    code += this.state.code;
+    code += postCode;
     input = this.state.input;
     this.output = "";
     config = {
@@ -145,6 +293,7 @@ Main = React.createClass({
     if (debug) {
       this.preDebug();
       try {
+        // console.log(code);
         this["debugger"] = JSCPP.run(code, input, config);
         return this.startDebug();
       } catch (error) {
@@ -265,6 +414,16 @@ Main = React.createClass({
       markers: []
     });
   },
+  simulation_toggle: function() {
+    simulationStatus = !simulationStatus;
+    // paused = true;
+    // this["debugger"] = null;
+    // return this.setState({
+    //   status: "editing",
+    //   code: this.codeBackup,
+    //   markers: []
+    // });
+  },
   preRun: function() {
     this.setState({
       output: "",
@@ -319,45 +478,14 @@ Main = React.createClass({
       fr = new FileReader();
       fr.onloadend = (function(_this) {
 		return function() {
-			var result = "#include <iostream>\n";
-          result += "using namespace std;\n"
-          result += "#include <OrangutanLCD.h>\n";
-          result += "#include <OrangutanBuzzer.h>\n";
-          result += "#include <OrangutanPushbuttons.h>\n";
-          result += "#include <OrangutanAnalog.h>\n";
-          result += "#include <OrangutanLEDs.h>\n";
-          result += "#include <OrangutanMotors.h>\n";
-          result += "#define IR_EMITTERS_ON 1\n";
-          result += "#define BUTTON_A 0\n";
-          result += "#define BUTTON_B 1\n";
-          result += "#define BUTTON_C 2\n";
-          result += "#define LOW 0\n";
-          result += "#define HIGH 1\n";
-          result += "OrangutanLCD2 OrangutanLCD;\n";
-          result += "OrangutanBuzzer2 OrangutanBuzzer;\n";
-          result += "OrangutanPushbuttons2 OrangutanPushbuttons;\n";
-          result += "OrangutanAnalog2 OrangutanAnalog;\n";
-          result += "OrangutanLEDs2 OrangutanLEDs;\n";
-          result += "OrangutanMotors2 OrangutanMotors;\n\n";
-          result += "void delay(int t){\nint a = t;\n/*TODO*/}\n";
-          //result += "void simPrint(char t){/*TODO*/}\n";
-          //result += "void simPrint(char* t){/*TODO*/}\n";
-          //result += "void simPrint(int t){/*TODO*/}\n";
-          result += fr.result;
+			var result = fr.result;
           result = result.replace(/::/g, ".");
           result = result.replace(/ PROGMEM/g, "");
           result = result.replace(/\\xf7 /g, "pi");
           result = result.replace(/OrangutanLCD.print\(( |[A-Z]|[a-z]|'|[0-9]|"|!)*\);/g, ""); // remove as chamadas de print pois não há overloading implementado
           //result = result.replace(/while\(OrangutanBuzzer::isPlaying\(\)\);/g, "");
           result = result.replace("while(OrangutanBuzzer.isPlaying());", ""); // por algum motivo ele nao entende a construcao while(algo); // tive que remover
-          result += "\nint main() {\n";
-          result += "\tsetup();\n";
-          result += "\twhile(true){\n";
-          result += "\t\tloop();\n";
-          result += "\t}\n";
-          result += "\treturn 0;\n";
-          result += "}\n";
-
+          
           //console.log(result);      
       		//fr.result = result;
         
@@ -401,11 +529,12 @@ Main = React.createClass({
     }
   },
   render: function() {
-    var brand, code, debugging, editing, input, lastVars, markers, output, ref, running, status, vars;
+    var brand, code, debugging, editing, simulating, input, lastVars, markers, output, ref, running, status, vars;
     ref = this.state, code = ref.code, input = ref.input, output = ref.output, status = ref.status, markers = ref.markers, vars = ref.vars, lastVars = ref.lastVars;
     debugging = status === "debugging";
     editing = status === "editing";
     running = status === "running";
+    simulating = status === "simulating";
     brand = React.createElement("a", {
       "href": void 0,
       "className": "logo"
@@ -427,7 +556,7 @@ Main = React.createClass({
     }), React.createElement(Navbar, {
       "brand": brand
     }, React.createElement(Nav, null, React.createElement(DropdownButton, {
-      "title": "File",
+      "title": "Arquivo",
       "onSelect": this.filemenu
     },
     // React.createElement(MenuItem, {
@@ -436,15 +565,15 @@ Main = React.createClass({
     //   "glyph": "floppy-open"
     // }), "Quick Open (Ctrl + O)"),
     React.createElement(MenuItem, {
-      "eventKey": "quick-save"
+      "eventKey": "loadRoad"
     }, React.createElement(Glyphicon, {
-      "glyph": "upload"
-    }), " Load background"),
+      "glyph": "road"
+    }), " Pista..."),
     React.createElement(MenuItem, {
       "eventKey": "upload"
     }, React.createElement(Glyphicon, {
       "glyph": "upload"
-    }), " Open...")//,
+    }), " Carregar código")//,
     // React.createElement(MenuItem, {
     //   "eventKey": "download"
     // }, React.createElement(Glyphicon, {
@@ -457,13 +586,32 @@ Main = React.createClass({
       "disabled": !editing
     }, React.createElement(Glyphicon, {
       "glyph": "play"
-    }), "Run"), (debugging ? React.createElement(NavItem, {
+    }), " Run"), (debugging ? React.createElement(NavItem, {
       "href": "#",
       "onClick": (debugging ? this.debug_stop : void 0),
       "disabled": !debugging
     }, React.createElement(Glyphicon, {
       "glyph": "stop"
-    }), "Stop") : void 0))), React.createElement(Grid, null, (debugging ? React.createElement(Row, {
+    }), " Stop") : void 0),
+    React.createElement(NavItem, {
+      "href": "#",
+      "onClick": (this.simulation_toggle),
+      "disabled": !editing
+    }, React.createElement(Glyphicon, {
+      "glyph": "sunglasses"
+    }), " Simulation"),
+    React.createElement(NavItem, {
+      "onClick": (function(){
+        x = document.getElementById("helpScreen");
+        if(x.style.display === "none"){
+          x.style.display = "block";
+        } else{
+          x.style.display = "none";
+        }}),
+    }, React.createElement(Glyphicon, {
+      "glyph": "question-sign"
+    }), " Ajuda")
+    )), React.createElement(Grid, null, (debugging ? React.createElement(Row, {
       "className": "debug-toolbar"
     },) : void 0), React.createElement(Row, {
       "className": "main-row"
@@ -705,11 +853,15 @@ function myUp() {
 
 var editor = document.getElementById("editor");
 editor.style.float = 'right';
+editor.style.border = "20px blue";
 var editorParent = editor.parentElement;
 simulationScreen = document.createElement('div');
 simulationScreen.style.width = "50%";
 simulationScreen.style.height = "500px";
 simulationScreen.id = "simulationScreen";
+simulationScreen.style.borderWidth = "2px";
+simulationScreen.style.borderColor = "red";
+
 canvas = document.createElement('canvas');
 canvas.id = "scene";
 //canvas.width = window.innerWidth*0.48;
