@@ -33,7 +33,8 @@ var ui = {
 
 const dotGeometry = new THREE.Geometry();
 dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
-const dotMaterial = new THREE.PointsMaterial( { size: 4, sizeAttenuation: false, color: 0xff0000} );
+const dotMaterialG = new THREE.PointsMaterial( { size: 4, sizeAttenuation: false, color: 0x00ff00} );
+const dotMaterialR = new THREE.PointsMaterial( { size: 4, sizeAttenuation: false, color: 0xff0000} );
 
 function getImageData( image ) {
 
@@ -148,24 +149,39 @@ function setTrackScaleFromTexture(texture) {
     // console.log("scaled");
 }
 
+//var sensors = Array();
 function insertSensors(object) {
     const robotRadius = object.radius;
-    var sensorPositions = Array();
+    // var sensorPositions = Array();
     const sensorAmplitude = Math.PI/3;
     for(var i=0; i<5;i++) {
         var ang = i*sensorAmplitude*0.25 + sensorAmplitude + Math.PI;
         var x = robotRadius*Math.cos(ang);
         var y = robotRadius*Math.sin(ang);
-        sensorPositions.push([x, y]);
+        // sensorPositions.push([x, y]);
 
-        var sensor = new THREE.Points( dotGeometry, dotMaterial);
+        var sensor = new THREE.Points( dotGeometry, dotMaterialR);
         sensor.position.x = x;
         sensor.position.y = y;
         sensor.position.z = 1;
         sensor.name = "sensor_" + i;
+        sensor.read = function(){
+            this.updateMatrixWorld();
+            var vector = this.position.clone();
+            var vector2 = vector.applyMatrix4( this.matrixWorld.clone() );
+            var pixelValue = getPixel(background,vector2.x*ui.textureScale + background.width*0.5, background.height*0.5 - vector2.y*ui.textureScale)[0]
+            if(pixelValue>100){
+                this.material = dotMaterialR;
+            } else {
+                this.material = dotMaterialG;
+            }
+            return pixelValue;
+        };
+//        sensors[i] = sensor;
         object.add( sensor );
     }
 }
+//console.log(sensors);
 
 function getSensorsPositions(object) {
     var sensorsPositions = new Array();
@@ -180,26 +196,6 @@ function getSensorsPositions(object) {
     return sensorsPositions;
 }
 
-function readSensors(sensorsPositions) {
-    var tempSensor = 0;
-    var sum = 0;
-    // console.log("readSensors");
-    // console.log(sensorsPositions);
-    for (var i=0; i<5; i++) {
-        // pololu3piSensors[i] = backgroundData[(sensorsPositions[i].y*background.width+sensorsPositions[i].x)*4];
-        pololu3piSensors[i] = getPixel(background,sensorsPositions[i].x*ui.textureScale + background.width*0.5, background.height*0.5 - sensorsPositions[i].y*ui.textureScale)[0];
-        //pololu3piSensors[i] = (i != 4 && i!=0 ? 0 : 255); 
-        tempSensor += (1- pololu3piSensors[i]/255.0)*(i+1)*1000;
-        sum += pololu3piSensors[i]/255.0;
-        // sum += 1;
-      }
-    
-      tempSensor /= sum;
-    
-    //   console.log(tempSensor);
-    
-      pololu3piSensorsResult = tempSensor;
-}
 
 function init() {
     for(var i=0;i<5;i++) {
@@ -207,7 +203,7 @@ function init() {
     }
     simulationScreen = document.getElementById("simulationScreen");
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xFFFFFFFF);
+    scene.background = new THREE.Color(0xF0F0F0FF);
     // instantiate a loader
     var loader = new THREE.OBJLoader();
 
@@ -295,6 +291,30 @@ function init() {
                     robot.radius = robot.diameter*0.5;
                     insertSensors(robot);
                     scene.add( object );
+                    robot.readSensors = function() {
+                        var tempSensor = 0;
+                        var sum = 0;
+                        // console.log("readSensors");
+                        // console.log(sensorsPositions);
+                        for (var i=0; i<5; i++) {
+                            sensor = robot.getObjectByName("sensor_"+i);
+                            // pololu3piSensors[i] = backgroundData[(sensorsPositions[i].y*background.width+sensorsPositions[i].x)*4];
+                            pololu3piSensors[i] = sensor.read();
+                            // console.log(pololu3piSensors[i]);
+                            // sensor.material = pololu3piSensors[i]<100? dotMaterialR:dotMaterialG;
+                            //console.log(robot.getObjectByName("sensor_"+i).material);
+                            //pololu3piSensors[i] = (i != 4 && i!=0 ? 0 : 255); 
+                            tempSensor += (1- pololu3piSensors[i]/255.0)*(i+1)*1000;
+                            sum += pololu3piSensors[i]/255.0;
+                            // sum += 1;
+                          }
+                        
+                          tempSensor /= sum;
+                        
+                        //   console.log(tempSensor);
+                        
+                          pololu3piSensorsResult = tempSensor;
+                    }                    
                     robot.isOverLine = function(){
                         var overBlack = false
                         for(angle=0.0;angle<2*Math.PI;angle+=Math.PI/100){
@@ -391,8 +411,8 @@ function init() {
     if(paused == false) {
         // drawImageCenter(mini3pi, sim3pi.x, sim3pi.y, sim3pi.rotation);
         //readPixel(sim3pi.x, sim3pi.y, sim3pi.rotation+3.14/2);
-        var sensorPositions = getSensorsPositions(robot);
-        readSensors(sensorPositions);
+        //var sensorPositions = getSensorsPositions(robot);
+        robot.readSensors();
         
         var vc2 = jscpp["debugger"].setVariable("robot");
         vc2["robot"].v.members.sensorValues.v = pololu3piSensorsResult;
@@ -594,7 +614,7 @@ function simulate() {
     if (robot) {
         // // get robot angle for force direction estimation
         
-        console.log(document.getElementById("HUDStatus").innerHtml);// = "Status: " + str(3);
+        // console.log(document.getElementById("HUDStatus").innerHtml);// = "Status: " + str(3);
         // console.log("simulate");
         // var x = sim3pi.x;
         // var y = sim3pi.y;

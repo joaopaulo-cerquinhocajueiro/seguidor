@@ -7,6 +7,7 @@
 #editor {
 	height: 500px;
 	width: 49%;
+	border: 10px red;
 }
 
 .logo {
@@ -24,9 +25,8 @@
 #scene {
 	/*height: 500px;
 	width: 49%;*/
-	border-width: 1px;
-	border-color: black;
-	padding-top: 0;
+	border: 1px lightgray solid;
+    padding-top: 0;
 	float: left;
 }
 
@@ -44,6 +44,8 @@
 	left: 5%;
 	z-index:20;
 	display:none;
+	border-radius: 20px;
+	border: 2px red solid;
 }
 #headsUpDisplay{
 	background-color:black;
@@ -54,5 +56,14 @@
 	height:20%;
 	left:5%;
 	top:10%;
-	font-size:20px;
+	font-size: 20px;
+	border-radius: 5px;
+}
+
+#editor:focus{
+	border-width: 20pt;
+	border-color: yellow solid;
+}
+#scene:focu{
+	border: 2px tomato solid;
 }
