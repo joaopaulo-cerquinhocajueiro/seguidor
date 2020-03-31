@@ -400,16 +400,15 @@ function init() {
   
     // setTimeout(simulateAndShow, 50);
   }
-var x;
+var HUDstatus;
 window.onload = function(){
-    x = document.getElementById("HUDstatus");
+    HUDstatus = document.getElementById("HUDstatus");
 };
 
 function animate() {
-    if (x !== undefined){
-        // console.log(x);
+    if (HUDstatus !== undefined){
         var onLine = robot.isOverLine();
-        x.innerHTML = "Linha: " + onLine;
+        HUDstatus.innerHTML = "Linha: " + onLine;
     }
     requestAnimationFrame(animate);
     readKeys();
