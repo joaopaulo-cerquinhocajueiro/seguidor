@@ -428,7 +428,7 @@ Main = React.createClass({
     if (debug) {
       this.preDebug();
       try {
-        console.log(code);
+        // console.log(code);
         this["debugger"] = JSCPP.run(code, input, config);
         return this.startDebug();
       } catch (error) {

@@ -45,3 +45,14 @@
 	z-index:20;
 	display:none;
 }
+#headsUpDisplay{
+	background-color:black;
+	opacity:30%;
+	color: white;
+	position: absolute;
+	width: 40%;
+	height:20%;
+	left:5%;
+	top:10%;
+	font-size:20px;
+}

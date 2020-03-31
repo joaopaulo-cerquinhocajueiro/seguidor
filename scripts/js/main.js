@@ -295,6 +295,18 @@ function init() {
                     robot.radius = robot.diameter*0.5;
                     insertSensors(robot);
                     scene.add( object );
+                    robot.isOverLine = function(){
+                        var overBlack = false
+                        for(angle=0.0;angle<2*Math.PI;angle+=Math.PI/100){
+                            var posX = robot.position.x + robot.radius*Math.cos(angle);
+                            var posY = robot.position.y + robot.radius*Math.sin(angle);
+                            var pixel = getPixel(background,posX*ui.textureScale + background.width*0.5, background.height*0.5 - posY*ui.textureScale);
+                            if(pixel[0]<10){
+                                overBlack = true;
+                            }
+                        }
+                        return overBlack;
+                    };
                 }, onProgress, onError );
         } );
 
@@ -388,8 +400,17 @@ function init() {
   
     // setTimeout(simulateAndShow, 50);
   }
+var x;
+window.onload = function(){
+    x = document.getElementById("HUDstatus");
+};
 
 function animate() {
+    if (x !== undefined){
+        // console.log(x);
+        var onLine = robot.isOverLine();
+        x.innerHTML = "Linha: " + onLine;
+    }
     requestAnimationFrame(animate);
     readKeys();
     simulateAndShow();
@@ -574,7 +595,7 @@ function simulate() {
     if (robot) {
         // // get robot angle for force direction estimation
         
-
+        console.log(document.getElementById("HUDStatus").innerHtml);// = "Status: " + str(3);
         // console.log("simulate");
         // var x = sim3pi.x;
         // var y = sim3pi.y;
@@ -625,5 +646,6 @@ function simulate() {
         robot.position.y = y + dt * v * Math.sin(newTheta);
         robot.rotation.z = theta + dt * w;
         
+//        getPixel()
     }
 }
