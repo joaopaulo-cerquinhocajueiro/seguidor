@@ -220,6 +220,7 @@ postCode += "}\n";
 Main = React.createClass({
   displayName: "Main",
   getInitialState: function() {
+    // console.log(this.parentElement());
     return {
       code: this.defaultCode,
       output: "",
@@ -414,16 +415,6 @@ Main = React.createClass({
       markers: []
     });
   },
-  simulation_toggle: function() {
-    simulationStatus = !simulationStatus;
-    // paused = true;
-    // this["debugger"] = null;
-    // return this.setState({
-    //   status: "editing",
-    //   code: this.codeBackup,
-    //   markers: []
-    // });
-  },
   preRun: function() {
     this.setState({
       output: "",
@@ -593,13 +584,6 @@ Main = React.createClass({
     }, React.createElement(Glyphicon, {
       "glyph": "stop"
     }), " Stop") : void 0),
-    React.createElement(NavItem, {
-      "href": "#",
-      "onClick": (this.simulation_toggle),
-      "disabled": !editing
-    }, React.createElement(Glyphicon, {
-      "glyph": "sunglasses"
-    }), " Simulation"),
     React.createElement(NavItem, {
       "onClick": (function(){
         x = document.getElementById("helpScreen");

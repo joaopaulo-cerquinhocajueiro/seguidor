@@ -17,6 +17,15 @@ var raycaster;
 // Acrescentado por JP
 var simulationStatus = true;
 
+var trackOptions = [
+    {track:"track1",
+     name:"Circular",
+     start:{x:40.0,y:0.0,ang:0.0}},
+    {track:"track2",
+     name:"Não Circular",
+     start:{x:38.0,y:+0.5,ang:-0.02}},
+]
+
 var kb = { key : new Array()};
 var ui = {
     isRotating : false,
@@ -214,7 +223,8 @@ function init() {
     textures = {
         // bg 			: new THREE.TextureLoader().load( 'assets/img/bg.jpg' ),
         // track 	: new THREE.TextureLoader().load( 'assets/img/7pixels.png', function(texture) {geometries.plane = new THREE.PlaneGeometry(texture.image.width,texture.image.height); geometries.plane.needsUpdate=true;} ),
-        track 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
+        track1 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
+        track2 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
         // einstein 	: new THREE.TextureLoader().load( 'assets/img/einstein.jpg' )
     };
     
@@ -226,7 +236,7 @@ function init() {
 
     materials = { 
         track 	: new THREE.MeshBasicMaterial({
-                                map:textures.track,
+                                map:textures.track1,
                                 side : THREE.DoubleSide
                             })
         // einstein 	: new THREE.MeshBasicMaterial({
@@ -278,10 +288,10 @@ function init() {
                 .setPath( 'assets/models/'+objFolder+'/' )
                 .load( objFileName + '.obj', function ( object ) {
                     robot = object;
-                    robot.rotation.z = Math.PI;
+                    robot.rotation.z = Math.PI+trackOptions[0].start.ang;
                     robot.scale.x = robot.scale.y = robot.scale.z = 1;
-                    robot.position.x = 40;
-                    robot.position.y = robot.position.z = 0;
+                    robot.position.x = trackOptions[0].start.x;
+                    robot.position.y = robot.position.z = trackOptions[0].start.y;
                     robot.da = robot.dx = robot.dy = 0;
                     robot.speedFactor = 0;
                     robot.walkSpeed = 1;
@@ -326,7 +336,23 @@ function init() {
                             }
                         }
                         return overBlack;
-                    };
+                    }
+                    robot.distanceFromStart = function(){
+                        var distancia =  Math.sqrt(Math.pow(robot.position.x-trackOptions[0].start.x,2) + Math.pow(robot.position.y-trackOptions[0].start.y,2));
+                        // console.log(distancia);
+                        return distancia;
+                    }
+                    robot.started = function(){
+                        return robot.distanceFromStart()>4.0;
+                    }
+                    robot.finished = function(){
+                        return robot.distanceFromStart()<3.0;
+                    }
+                    robot.goToStartPosition = function(){
+                        robot.rotation.z = Math.PI+trackOptions[0].start.ang;
+                        robot.position.x = trackOptions[0].start.x;
+                        robot.position.y = robot.position.z = trackOptions[0].start.y;        
+                    }
                 }, onProgress, onError );
         } );
 
@@ -420,15 +446,45 @@ function init() {
   
     // setTimeout(simulateAndShow, 50);
   }
-var HUDstatus;
+var HUDstatus,overheadCounter;
+var generalStatus = "Controle por teclado";
+var tickCounter = 0;
+
+function tick() {
+    if(((generalStatus==="Partida")||(generalStatus==="Rodando")||(generalStatus==="Saiu")||(generalStatus==="Gabaritou"))&&!(jscpp.state.status==="debugging")){
+        generalStatus = "Controle por teclado";
+    }
+    if((jscpp.state.status==="debugging") && (generalStatus ==="Controle por teclado")){
+        generalStatus = "Partida";
+        robot.goToStartPosition();
+        tickCounter = 0;
+    } else if((generalStatus==="Partida")&&robot.started()){
+        generalStatus = "Rodando";
+    } else if((generalStatus==="Rodando")&&!robot.isOverLine()){
+        generalStatus = "Saiu";
+    } else if((generalStatus==="Rodando")&&robot.finished()){
+        generalStatus = "Gabaritou";
+    }
+    if(generalStatus==="Rodando"){
+        tickCounter++;
+    }
+}
+
 window.onload = function(){
     HUDstatus = document.getElementById("HUDstatus");
+    overheadCounter = document.getElementById("overheadCounter");
+    setInterval(tick, 10);
 };
 
 function animate() {
     if (HUDstatus !== undefined){
-        var onLine = robot.isOverLine();
-        HUDstatus.innerHTML = "Linha: " + onLine;
+//        var onLine = robot.isOverLine();
+        HUDstatus.innerHTML = "Status: " + generalStatus;
+        if(generalStatus==="Controle por teclado"){
+            overheadCounter.innerHTML = robot.isOverLine()?"Sobre a linha":"Fora da linha";
+        } else {
+            overheadCounter.innerHTML = "Timer: "+tickCounter/100.0+"s."
+        }
     }
     requestAnimationFrame(animate);
     readKeys();
@@ -437,7 +493,7 @@ function animate() {
 }
 
 function readKeys() {
-    if (robot && !simulationStatus) {
+    if (robot && jscpp.state.status==="editing") {
         if(kb.key['w']) {
             robot.speedFactor = 1;
         }
