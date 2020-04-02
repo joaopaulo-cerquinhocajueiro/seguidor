@@ -14,17 +14,9 @@ var cameraDeltaX = 0;
 var intersects;
 var raycaster;
 
+var track = trackOptions[0];
 // Acrescentado por JP
 var simulationStatus = true;
-
-var trackOptions = [
-    {track:"track1",
-     name:"Circular",
-     start:{x:40.0,y:0.0,ang:0.0}},
-    {track:"track2",
-     name:"Não Circular",
-     start:{x:38.0,y:+0.5,ang:-0.02}},
-]
 
 var kb = { key : new Array()};
 var ui = {
@@ -141,6 +133,15 @@ function loadNewTrackFromImage(img) {
     // console.log("loaded");
 }
 
+function loadTrack(trackNumber){
+    // define a nova pista
+    track = trackOptions[trackNumber];
+    // Carrega a nova texture
+    loadNewTrackFromImage(textures[track.track].image);
+    // Move o robô para a posição inicial
+    robot.goToStartPosition();
+}
+
 function getPixel(canvas, x, y) {
     var ctx = canvas.getContext('2d');
     var pixel = [255,255,255,255];
@@ -223,8 +224,8 @@ function init() {
     textures = {
         // bg 			: new THREE.TextureLoader().load( 'assets/img/bg.jpg' ),
         // track 	: new THREE.TextureLoader().load( 'assets/img/7pixels.png', function(texture) {geometries.plane = new THREE.PlaneGeometry(texture.image.width,texture.image.height); geometries.plane.needsUpdate=true;} ),
-        track1 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
-        track2 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
+        track2 	: new THREE.TextureLoader().load( 'assets/img/3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
+        track1 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);})
         // einstein 	: new THREE.TextureLoader().load( 'assets/img/einstein.jpg' )
     };
     
@@ -288,10 +289,10 @@ function init() {
                 .setPath( 'assets/models/'+objFolder+'/' )
                 .load( objFileName + '.obj', function ( object ) {
                     robot = object;
-                    robot.rotation.z = Math.PI+trackOptions[0].start.ang;
+                    robot.rotation.z = Math.PI+track.start.ang;
                     robot.scale.x = robot.scale.y = robot.scale.z = 1;
-                    robot.position.x = trackOptions[0].start.x;
-                    robot.position.y = robot.position.z = trackOptions[0].start.y;
+                    robot.position.x = track.start.x;
+                    robot.position.y = robot.position.z = track.start.y;
                     robot.da = robot.dx = robot.dy = 0;
                     robot.speedFactor = 0;
                     robot.walkSpeed = 1;
@@ -338,7 +339,7 @@ function init() {
                         return overBlack;
                     }
                     robot.distanceFromStart = function(){
-                        var distancia =  Math.sqrt(Math.pow(robot.position.x-trackOptions[0].start.x,2) + Math.pow(robot.position.y-trackOptions[0].start.y,2));
+                        var distancia =  Math.sqrt(Math.pow(robot.position.x-track.start.x,2) + Math.pow(robot.position.y-track.start.y,2));
                         // console.log(distancia);
                         return distancia;
                     }
@@ -349,9 +350,9 @@ function init() {
                         return robot.distanceFromStart()<3.0;
                     }
                     robot.goToStartPosition = function(){
-                        robot.rotation.z = Math.PI+trackOptions[0].start.ang;
-                        robot.position.x = trackOptions[0].start.x;
-                        robot.position.y = robot.position.z = trackOptions[0].start.y;        
+                        robot.rotation.z = Math.PI+track.start.ang;
+                        robot.position.x = track.start.x;
+                        robot.position.y = robot.position.z = track.start.y;        
                     }
                 }, onProgress, onError );
         } );

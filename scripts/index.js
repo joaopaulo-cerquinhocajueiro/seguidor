@@ -217,6 +217,16 @@ postCode += "\t}\n";
 postCode += "\treturn 0;\n";
 postCode += "}\n";
 
+
+var trackOptions = [
+  {track:"track1",
+   name:"Circular",
+   start:{x:40.0,y:0.0,ang:0.0}},
+  {track:"track2",
+   name:"Não Circular",
+   start:{x:38.0,y:+0.5,ang:-0.02}},
+];
+
 Main = React.createClass({
   displayName: "Main",
   getInitialState: function() {
@@ -263,6 +273,10 @@ Main = React.createClass({
     return this.setState({
       output: this.output + "\n" + e
     });
+  },
+  loadTrack: function(trackNumber){
+    console.log(trackOptions[trackNumber]);
+    loadTrack(trackNumber);
   },
   run: function(debug, e) {
     var code, config, exitCode, input;
@@ -546,31 +560,49 @@ Main = React.createClass({
       "onChange": this.handleFile2
     }), React.createElement(Navbar, {
       "brand": brand
-    }, React.createElement(Nav, null, React.createElement(DropdownButton, {
-      "title": "Arquivo",
-      "onSelect": this.filemenu
-    },
-    // React.createElement(MenuItem, {
-    //   "eventKey": "quick-open"
-    // }, React.createElement(Glyphicon, {
-    //   "glyph": "floppy-open"
-    // }), "Quick Open (Ctrl + O)"),
-    React.createElement(MenuItem, {
-      "eventKey": "loadRoad"
-    }, React.createElement(Glyphicon, {
-      "glyph": "road"
-    }), " Pista..."),
-    React.createElement(MenuItem, {
-      "eventKey": "upload"
-    }, React.createElement(Glyphicon, {
-      "glyph": "upload"
-    }), " Carregar código")//,
-    // React.createElement(MenuItem, {
-    //   "eventKey": "download"
-    // }, React.createElement(Glyphicon, {
-    //   "glyph": "save"
-    // }), "Download")
-    ),
+    }, React.createElement(Nav, null,
+       React.createElement(DropdownButton, {
+        "title": "Arquivo",
+        "onSelect": this.filemenu
+      },
+      // React.createElement(MenuItem, {
+      //   "eventKey": "quick-open"
+      // }, React.createElement(Glyphicon, {
+      //   "glyph": "floppy-open"
+      // }), "Quick Open (Ctrl + O)"),
+      React.createElement(MenuItem, {
+        "eventKey": "loadRoad"
+      }, React.createElement(Glyphicon, {
+        "glyph": "road"
+      }), " Pista..."),
+      React.createElement(MenuItem, {
+        "eventKey": "upload"
+      }, React.createElement(Glyphicon, {
+        "glyph": "upload"
+      }), " Carregar código")//,
+      // React.createElement(MenuItem, {
+      //   "eventKey": "download"
+      // }, React.createElement(Glyphicon, {
+      //   "glyph": "save"
+      // }), "Download")
+      ),
+      React.createElement(DropdownButton, {
+        "title": "Pistas",
+        "onSelect": this.filemenu
+        },
+        React.createElement(MenuItem, {
+          "onClick": this.loadTrack.bind(this,0),
+          "disabled": !editing
+        }, React.createElement(Glyphicon, {
+          "glyph": "road"
+        }), " "+ trackOptions[0].name),  
+        React.createElement(MenuItem, {
+          "onClick": this.loadTrack.bind(this,1),
+          "disabled": !editing
+        }, React.createElement(Glyphicon, {
+          "glyph": "road"
+        }), " "+ trackOptions[1].name),  
+      ),
     React.createElement(NavItem, {
       "href": "#",
       "onClick": (editing ? this.run.bind(this, true) : void 0),
