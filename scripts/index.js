@@ -225,6 +225,9 @@ var trackOptions = [
   {track:"track2",
    name:"Não Circular",
    start:{x:38.0,y:+0.5,ang:-0.02}},
+   {track:"track3",
+   name:"Comprida",
+   start:{x:9.5,y:+0.0,ang:Math.PI}},
 ];
 
 Main = React.createClass({
@@ -602,6 +605,12 @@ Main = React.createClass({
         }, React.createElement(Glyphicon, {
           "glyph": "road"
         }), " "+ trackOptions[1].name),  
+        React.createElement(MenuItem, {
+          "onClick": this.loadTrack.bind(this,2),
+          "disabled": !editing
+        }, React.createElement(Glyphicon, {
+          "glyph": "road"
+        }), " "+ trackOptions[2].name)  
       ),
     React.createElement(NavItem, {
       "href": "#",

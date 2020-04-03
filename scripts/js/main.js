@@ -224,8 +224,12 @@ function init() {
     textures = {
         // bg 			: new THREE.TextureLoader().load( 'assets/img/bg.jpg' ),
         // track 	: new THREE.TextureLoader().load( 'assets/img/7pixels.png', function(texture) {geometries.plane = new THREE.PlaneGeometry(texture.image.width,texture.image.height); geometries.plane.needsUpdate=true;} ),
-        track2 	: new THREE.TextureLoader().load( 'assets/img/3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
-        track1 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);})
+        // track2 	: new THREE.TextureLoader().load( 'assets/img/3cm.png', function(texture) {loadNewTrackFromImage(texture.image);}),
+        // track3 	: new THREE.TextureLoader().load( 'assets/img/complexo.png', function(texture) {loadNewTrackFromImage(texture.image);}),
+        // track1 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png', function(texture) {loadNewTrackFromImage(texture.image);})
+        track2 	: new THREE.TextureLoader().load( 'assets/img/3cm.png'),
+        track3 	: new THREE.TextureLoader().load( 'assets/img/complexo.png'),
+        track1 	: new THREE.TextureLoader().load( 'assets/img/circular3cm.png')
         // einstein 	: new THREE.TextureLoader().load( 'assets/img/einstein.jpg' )
     };
     
@@ -472,6 +476,7 @@ function tick() {
 }
 
 window.onload = function(){
+    this.loadTrack(0);
     HUDstatus = document.getElementById("HUDstatus");
     overheadCounter = document.getElementById("overheadCounter");
     setInterval(tick, 10);
