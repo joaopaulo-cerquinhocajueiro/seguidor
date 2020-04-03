@@ -12,10 +12,12 @@
 
 .logo {
 	padding-left: 30px;
-	background-image: url("https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png");
+	/* background-image: url("https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png"); */
 	background-size: 30px;
 	background-repeat: no-repeat;
 	background-position: left center;
+	display: flex;
+	flex-direction: row;
 }
 
 .container {
@@ -64,6 +66,12 @@
 	border-width: 20pt;
 	border-color: yellow solid;
 }
-#scene:focu{
+#scene:focus{
 	border: 2px tomato solid;
+}
+#maracaIcon{
+	transition: transform 0.5s;
+}
+#maracaIcon:hover{
+	transform: scale(1.3);
 }

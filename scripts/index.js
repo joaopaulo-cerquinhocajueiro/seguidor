@@ -543,10 +543,15 @@ Main = React.createClass({
     editing = status === "editing";
     running = status === "running";
     simulating = status === "simulating";
-    brand = React.createElement("a", {
-      "href": void 0,
-      "className": "logo"
-    }, "3D JPi Simulator");
+    brand = React.createElement("div", {
+      "className": "logo",
+      "display":"block"
+    },
+    React.createElement("img",{"id":'maracaIcon',
+                               "src":'./assets/img/logoMaracatronics.png',
+                               'height':"30px",
+                              "display":"contents"})
+		,"3D JPi Simulator");
     return React.createElement("div", null, React.createElement("input", {
       "type": "file",
       "ref": "hiddenfile",
